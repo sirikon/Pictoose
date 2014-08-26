@@ -1,0 +1,26 @@
+{
+  "name": "pictoose",
+  "version": "0.0.1",
+  "description": "Pictures in Mongoose!",
+  "main": "pictoose.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://Sirikon@github.com/Sirikon/Pictoose.git"
+  },
+  "author": "Sirikon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Sirikon/Pictoose/issues"
+  },
+  "homepage": "https://github.com/Sirikon/Pictoose",
+  "dependencies": {
+    "express": "4.x.x",
+    "mongoose": "3.8.x"
+  },
+  "devDependencies": {
+    "multer": "0.1.x"
+  }
+}
