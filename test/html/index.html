@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Test Pictoose</title>
+	<script type="text/javascript" src="jquery.js"></script>
+</head>
+<body>
+	<form id="test">
+		<label for="model">Modelo</label>
+		<input type="text" name="model">
+		<br>
+		<label for="thumbnail">Thumbnail</label><br>
+		<input type="file" for="thumbnail"><br>
+		<textarea name="thumbnail" style="width:320px;height:120px;"></textarea><br>
+		<img src="" im="thumbnail" style="width:200px;height:150px;" />
+		<br><br>
+
+		<label for="thumbnail">Brand</label><br>
+		<input type="file" for="brand"><br>
+		<textarea name="brand" style="width:320px;height:120px;"></textarea><br>
+		<img src="" im="brand" style="width:200px;height:150px;" />
+		<br><br>
+		<input type="submit" value="Enviar">
+	</form>
+	<script>
+
+		$(document).on('change',"input[type='file']", function(e){
+			var anchor = this;
+			var reader = new FileReader();
+		    reader.onload = function(event) {
+		    	$("*[name='"+ $(anchor).attr('for') +"']").val(event.target.result);
+		    	$("img[im='"+ $(anchor).attr('for') +"']").attr('src',event.target.result);
+		    };  
+		    reader.readAsDataURL(e.target.files[0]);
+		});
+
+		$("form#test").on('submit', function(e){
+			e.preventDefault();
+			var el = $(this);
+			var data = el.serialize();
+			$.post('/base64', data, function(res){
+				alert(res);
+			});
+		});
+	</script>
+</body>
+</html>

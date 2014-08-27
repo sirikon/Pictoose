@@ -1,6 +1,7 @@
 'use strict';
 
 var express 	= require('express');
+var bodyparser 	= require('body-parser')
 var multer 		= require('multer');
 var mongoose 	= require('mongoose');
 var Pictoose	= require('../pictoose.js');
@@ -19,9 +20,13 @@ Pictoose.Config('RESOURCE_MAIN_URL', 'http://127.0.0.1:3000/resources/');
 var Car = mongoose.model('Car', CarSchema);
 
 var app = express();
+
 app.use(multer({dest: './uploads/'}));
+app.use(bodyparser.urlencoded({limit: '50mb'}));
+app.use(bodyparser.json({limit: '50mb'}));
 
 app.use('/public',express.static('./public'));
+app.use('/test',express.static('./test/html'));
 
 app.get('/resources/:resid', Pictoose.RouteController);
 
@@ -39,11 +44,26 @@ app.post('/', function(req,res){
 	res.send('ok');
 });
 
+app.post('/base64', function(req,res){
+	var myCar = new Car(req.body);
+	myCar.save();
+	res.send('ok');
+});
+
 app.delete('/:carid', function(req,res){
 	Car.findById(req.params.carid).exec(function(err,doc){
 		doc.remove();
 		res.send('ok');
 	})
+});
+
+app.delete('/', function(req,res){
+	Car.find().exec(function(err,docs){
+		for(var x in docs){
+			docs[x].remove();
+		}
+		res.send('ok');
+	});
 });
 
 app.listen(3000);

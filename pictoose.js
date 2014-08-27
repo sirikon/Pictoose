@@ -8,6 +8,51 @@ var Settings = {
 	RESOURCE_MAIN_URL: "/resources/"
 }
 
+var base64RegExp = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$");
+
+var mimeTypes = {
+	"image/png"				: "png",
+	"image/jpg"				: "jpg",
+	"image/jpeg"			: "jpeg",
+	"image/gif"				: "gif",
+	"image/x-windows-bmp"	: "bmp",
+	"image/bmp"				: "bmp",
+	"image/webp"			: "webp"
+}
+
+var CheckMimeType = function(mime){
+	if ( mimeTypes.hasOwnProperty(mime) ){
+		return mimeTypes[mime];
+	}else{
+		return false;
+	}
+}
+
+var CheckBase64 = function(data){
+
+	if ( !data ){
+		return false;
+	}
+
+	if( data.indexOf(",") == -1 ){
+		return false;
+	}
+
+	if(  data.indexOf(",") != data.lastIndexOf(",") ){
+		return false;
+	}
+
+	var d = data.split(',')[1];
+
+	return base64RegExp.test(d);
+}
+
+var randomString = function(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    return result;
+}
+
 var PictureGetter = function(field){
 	return function(){
 		return Settings.RESOURCE_MAIN_URL+this.get("_"+field+"_resid");
@@ -18,13 +63,30 @@ var PictureSetter = function(field){
 	return function(value){
 		var anchor = this;
 		var filename = path.basename(value)
-		if(fs.existsSync(value) && !fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+filename)){
+
+		if(CheckBase64(value)){
+			// It's base64
+			var mimetype = value.substr(5).split(";")[0];
+			var extension = CheckMimeType(mimetype);
+			if(extension){
+				filename = randomString(32,'abcdef1234567890')+"."+extension;
+				fs.writeFile(Settings.RESOURCE_STORAGE_ROOT+filename, value.split(',')[1], 'base64', function(err){
+					if(err){ console.log(err); return; }
+					anchor.set("_"+field+"_resid", filename);
+					anchor.save();
+				});
+			}else{
+				console.log('mimetype inválido: '+mimetype);
+			}
+		}else if(fs.existsSync(value) && !fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+filename)){
+			// It's a path, move it!
 			fs.rename(value, Settings.RESOURCE_STORAGE_ROOT+filename, function(err){
 				if(err){ console.log(err); return; }
 				anchor.set("_"+field+"_resid", filename);
 				anchor.save();
 			});
 		}else{
+			// Unknown
 			console.log('El fichero ' + filename + ' ya existe, abortando');
 		}		
 	}
