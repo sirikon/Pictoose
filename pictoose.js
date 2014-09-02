@@ -160,6 +160,9 @@ var PictureSetter = function(field){
 			var mimetype = value.substr(5).split(";")[0];
 			var extension = CheckMimeType(mimetype);
 			if(extension){
+				fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
+					if(err){ console.error(err); }
+				});
 				filename = randomString(32,'abcdef1234567890')+"."+extension;
 				fs.writeFile(Settings.RESOURCE_STORAGE_ROOT+filename, value.split(',')[1], 'base64', function(err){
 					if(err){ console.log(err); return; }
@@ -176,9 +179,14 @@ var PictureSetter = function(field){
 				anchor.set("_"+field+"_resid", filename);
 				anchor.save();
 			});
+		}else if(value == '' || value == null || value == undefined){
+			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
+				if(err){ console.error(err); }
+			});
+			anchor.set("_"+field+"_resid", '');
 		}else{
 			// Unknown
-			console.log('El fichero ' + filename + ' ya existe, abortando');
+			console.error('Could not save: ' + value);
 		}		
 	}
 }

@@ -56,6 +56,16 @@ app.post('/base64', function(req,res){
 	res.send('ok');
 });
 
+app.get('/:carid/update', function(req,res){
+	Car.findById(req.params.carid, function(err,doc){
+		for(var key in req.query){
+			doc[key] = req.query[key];
+		}
+		doc.save();
+		res.send('ok');
+	});
+});
+
 app.delete('/:carid', function(req,res){
 	Car.findById(req.params.carid).exec(function(err,doc){
 		doc.remove();
