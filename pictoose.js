@@ -9,18 +9,20 @@
 
 /* use strict & requirements */
 'use strict';
-var fs = require('fs');
-var path = require('path');
+var fs 				= require('fs');
+var path 			= require('path');
+var imagemagick 	= require('imagemagick-native');
 
 /* Settings */
 var Settings = {
-	RESOURCE_STORAGE_ROOT: "./resources/",
-	RESOURCE_STORAGE_URL: "/public/",
-	RESOURCE_MAIN_URL: "/resources/"
+	RESOURCE_STORAGE_ROOT: 	"./resources/",
+	RESOURCE_STORAGE_URL: 	"/public/",
+	RESOURCE_MAIN_URL: 		"/resources/"
 }
 
 /* Regular expression to check if a string is base64 */
-var base64RegExp = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$");
+var base64RegExp 			= new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$");
+var resizeOptionsRegExp 	= new RegExp("^[0-9]{1,4}x[0-9]{1,4}(afit|afil|fill)*$");
 
 /* Allowed MimeTypes list */
 var mimeTypes = {
@@ -84,12 +86,64 @@ var randomString = function(length, chars) {
     return result;
 }
 
+var ParseResizeOptions = function(options){
+	if( !resizeOptionsRegExp.test(options) ){
+		return false;
+	}
+
+	var mode;
+	switch(options.substr(-4)) {
+		case 'afil':
+			mode = 'aspectfill';
+			break;
+		case 'afit':
+			mode = 'aspectfit';
+			break;
+		case 'fill':
+			mode = 'fill';
+			break;
+	}
+
+	var rest = options.substr(0, options.length-4);
+	var rest = rest.split('x');
+
+	return {
+		width: parseInt(rest[0]),
+		height: parseInt(rest[1]),
+		mode: mode
+	}
+}
+
+var ParseFormatFromExtension = function(extension){
+	var ext = extension.toLowerCase();
+	var result;
+	switch(ext){
+		case 'png':
+			result = 'PNG';
+			break;
+		case 'gif':
+			result = 'GIF';
+			break;
+		case 'bmp':
+			result = 'BMP';
+			break;
+		default:
+			result = 'JPEG';
+	}
+	return result;
+}
+
 /**
  * Mongoose Getter
  */
 var PictureGetter = function(field){
 	return function(){
-		return Settings.RESOURCE_MAIN_URL+this.get("_"+field+"_resid");
+		var filename = this.get("_"+field+"_resid");
+		if (filename && filename != ""){
+			return Settings.RESOURCE_MAIN_URL+this.get("_"+field+"_resid");
+		}else{
+			return "";
+		}	
 	}
 }
 
@@ -181,13 +235,28 @@ var Config = function(key,value){
  */
 var RouteController = function(req,res){
 	var filename = req.params.resid;
-	if(req.query.resize){
-		var filenameExtension = filename.substr(filename.lastIndexOf('.'));
-		var filenameName = filename.substr(0,filename.lastIndexOf('.'));
+	var parsedOptions = ParseResizeOptions(req.query.resize);
+	var filenameExtension;
+	var filenameName;
+	if(req.query.resize && parsedOptions){
+		filenameExtension = filename.substr(filename.lastIndexOf('.'));
+		filenameName = filename.substr(0,filename.lastIndexOf('.'));
 		filename = filenameName+"_"+req.query.resize+filenameExtension;
 	}
 	fs.exists(Settings.RESOURCE_STORAGE_ROOT+filename, function(exists){
 		if(exists){
+			res.redirect(Settings.RESOURCE_STORAGE_URL+filename);
+		}else if(parsedOptions && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
+			var format = ParseFormatFromExtension(filenameExtension);
+			var resizedBuffer = imagemagick.convert({
+				srcData: fs.readFileSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid),
+				width: parsedOptions.width,
+				height: parsedOptions.height,
+				resizeStyle: parsedOptions.mode,
+				quality: 75,
+				format: format
+			});
+			fs.writeFileSync(Settings.RESOURCE_STORAGE_ROOT+filename,resizedBuffer);
 			res.redirect(Settings.RESOURCE_STORAGE_URL+filename);
 		}else{
 			res.redirect(Settings.RESOURCE_STORAGE_URL+req.params.resid);

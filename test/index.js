@@ -36,6 +36,12 @@ app.get('/', function(req,res){
 	});
 });
 
+app.get('/cars', function(req,res){
+	Car.find().exec(function(err,docs){
+		res.send(docs);
+	});
+});
+
 app.post('/', function(req,res){
 	var myCar = new Car(req.body);
 	myCar.thumbnail = req.files.thumbnail.path;
