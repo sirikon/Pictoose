@@ -37,13 +37,15 @@
 </head>
 <body>
 
-	<div class="container">
-		<button onclick="RemoveAll();">Borrar Todo</button>
+	<div style="position:fixed;top:0px;left:0px;width:100%;">
+		<div class="container">
+			<button onclick="RemoveAll(this);">Borrar Todo</button>
+		</div>
 	</div>
 
-	<div class="container">
+	<div class="container" style="margin-top:65px;">
 		<h1>Base 64</h1>
-		<form id="test">
+		<form class="base64" id="test">
 
 			<label for="model">Modelo</label>
 			<input type="text" name="model">
@@ -69,25 +71,65 @@
 	</div>
 
 	<div class="container">
-		<h1>iFrame</h1>
+		<h1>POST async iFrame</h1>
+		<form action="/" method="POST" target="uploadIframe" enctype="multipart/form-data">
+			<input type="text" placeholder="Modelo" name="model"><br>
+			Brand: <input type="file" name="brand"><br>
+			Thumbnail: <input type="file" name="thumbnail"><br>
+			<input type="submit" value="Enviar">
+		</form>
+		<iframe name="uploadIframe" id="uploadIframe"></iframe>
+	</div>
+
+	<div class="container">
+		<h1>URL</h1>
+		<form action="/base64" target="iframeURL" method="POST">
+			<input type="text" placeholder="Modelo" name="model"><br>
+			<input type="text" placeholder="URL brand" name="brand" style="width:100%;">
+			<input type="text" placeholder="URL thumbnail" name="thumbnail" style="width:100%;">
+			<input type="submit" value="Enviar">
+		</form>
+		<iframe frameborder="0" id="iframeURL" name="iframeURL" height="40"></iframe>
 	</div>
 
 	<script>
 
 		var data = {};
 
-		$(document).on('change',"input[type='file']", function(e){
+		$(document).on('change',"form.base64 input[type='file']", function(e){
 			var anchor = this;
 			var reader = new FileReader();
 		    reader.onload = function(event) {
-		    	$("*[name='"+ $(anchor).attr('for') +"']").val(event.target.result);
+		    	$("textarea[name='"+ $(anchor).attr('for') +"']").val(event.target.result);
 		    	$("img[im='"+ $(anchor).attr('for') +"']").attr('src',event.target.result);
 		    	data[$(anchor).attr('for')] = event.target.result;
 		    };  
 		    reader.readAsDataURL(e.target.files[0]);
 		});
 
-		var RemoveAll = function(){
+		$("#uploadIframe")[0].onprogress = function(e){
+			console.log('Progress');
+			console.log(e);
+		};
+
+		$("#uploadIframe")[0].onloadstart = function(e){
+			console.log('Load Start');
+			console.log(e);
+		};
+
+		$("#uploadIframe")[0].onload = function(e){
+			console.log('Loaded!');
+			console.log(e);
+		};
+
+		$("#uploadIframe")[0].onloadeddata = function(e){
+			console.log('Loaded Data!');
+			console.log(e);
+		};
+
+		var RemoveAll = function(element){
+			element.textContent = '...';
+			element.disabled = true;
 			$.ajax({
 				xhr: function(){
 					var xhr = new window.XMLHttpRequest();
@@ -96,7 +138,11 @@
 				url: '/',
 				method: 'DELETE',
 				success: function(res){
-					alert('ok');
+					element.textContent = 'ok!';
+					setTimeout(function(){
+						element.textContent = 'Borrar Todo';
+						element.disabled = false;
+					},2000);
 				}
 			})
 		}

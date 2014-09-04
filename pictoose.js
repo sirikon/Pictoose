@@ -12,6 +12,7 @@
 var fs 				= require('fs');
 var path 			= require('path');
 var imagemagick 	= require('imagemagick-native');
+var url 			= require('url');
 
 /* Settings */
 var Settings = {
@@ -171,11 +172,13 @@ var ParseFormatFromExtension = function(extension){
 var PictureGetter = function(field){
 	return function(){
 		var filename = this.get("_"+field+"_resid");
-		if (filename && filename != ""){
+		if ( url.parse(filename).host ){
+			return filename;
+		}else if( filename && filename != "" ){
 			return Settings.RESOURCE_MAIN_URL+this.get("_"+field+"_resid");
 		}else{
 			return "";
-		}	
+		}
 	}
 }
 
@@ -236,6 +239,8 @@ var PictureSetter = function(field){
 				}
 			});
 			anchor.set("_"+field+"_resid", '');
+		}else if( url.parse(value).host ){
+			anchor.set("_"+field+"_resid", value);
 		}else{
 			// Unknown
 			console.error('Could not save: ' + value);
@@ -260,9 +265,11 @@ var PictureFieldCreator = function(fields){
 var PictureRemover = function(fields){
 	return function(doc){
 		for(var x in fields){
-			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+this["_"+fields[x]+"_resid"], function(err){
+			if( !fs.existsSync( Settings.RESOURCE_STORAGE_ROOT+doc["_"+fields[x]+"_resid"] ) ){ return; }
+			if( !fs.lstatSync(Settings.RESOURCE_STORAGE_ROOT+doc["_"+fields[x]+"_resid"]).isFile() ){ return; }
+			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+doc["_"+fields[x]+"_resid"], function(err){
 				if(err){
-					console.log('Error removing: ' + Settings.RESOURCE_STORAGE_ROOT+this["_"+fields[x]+"_resid"]);
+					console.log('Error removing: ' + Settings.RESOURCE_STORAGE_ROOT+doc["_"+fields[x]+"_resid"]);
 					console.error(err);
 				}
 			});
