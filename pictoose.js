@@ -25,27 +25,59 @@ var base64RegExp 			= new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0
 var resizeOptionsRegExp 	= new RegExp("^[0-9]{1,4}x[0-9]{1,4}(afit|afil|fill)*$");
 
 /* Allowed MimeTypes list */
-var mimeTypes = {
-	"image/png"				: "png",
-	"image/jpg"				: "jpg",
-	"image/jpeg"			: "jpeg",
-	"image/gif"				: "gif",
-	"image/x-windows-bmp"	: "bmp",
-	"image/bmp"				: "bmp",
-	"image/webp"			: "webp"
+var mimes = {
+	"image/png"				: {extension: "png", 	type: "image"},
+	"image/jpg"				: {extension: "jpg", 	type: "image"},
+	"image/jpeg"			: {extension: "jpeg", 	type: "image"},
+	"image/gif"				: {extension: "gif", 	type: "image"},
+	"image/x-windows-bmp"	: {extension: "bmp", 	type: "image"},
+	"image/bmp"				: {extension: "bmp", 	type: "image"},
+	"image/webp"			: {extension: "webp", 	type: "image"},
+	"video/mp4"				: {extension: "mp4", 	type: "video"},
+	"video/avi"				: {extension: "avi", 	type: "video"},
+	"video/msvideo"			: {extension: "avi", 	type: "video"},
+	"video/x-msvideo"		: {extension: "avi", 	type: "video"},
+	"video/quicktime"		: {extension: "mov", 	type: "video"},
+	"video/mpeg"			: {extension: "mpeg", 	type: "video"},
+}
+
+/**
+ * Checks if a given mimetype is valid
+ * Returns the extension or false if it's not valid 
+ */
+var GetMimeExtension = function(mime){
+	// If the mimetype exists in the object...
+	if ( mimes.hasOwnProperty(mime) ){
+		return mimes[mime].extension;
+	}else{
+		return false;
+	}
 }
 
 /**
  * Checks if a given mimetype is valid.
- * Returns the extension or false if it's not valid 
+ * Returns the type or false if it's not valid 
  */
-var CheckMimeType = function(mime){
+var GetMimeType = function(mime){
 	// If the mimetype exists in the object...
-	if ( mimeTypes.hasOwnProperty(mime) ){
-		return mimeTypes[mime];
+	if ( mimes.hasOwnProperty(mime) ){
+		return mimes[mime].type;
 	}else{
 		return false;
 	}
+}
+
+/**
+ * Checks if a given mimetype is valid.
+ * Returns the type or false if it's not valid 
+ */
+var GetMimeTypeByExtension = function(ext){
+	for (var x in mimes){
+		if( mimes[x].extension == ext ){
+			return mimes[x].type;
+		}
+	}
+	return false;
 }
 
 /**
@@ -158,30 +190,50 @@ var PictureSetter = function(field){
 		if(CheckBase64(value)){
 			// It's base64, save it!
 			var mimetype = value.substr(5).split(";")[0];
-			var extension = CheckMimeType(mimetype);
+			var extension = GetMimeExtension(mimetype);
 			if(extension){
-				fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
-					if(err){ console.error(err); }
+				fs.exists(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(existsit){
+					if(existsit && fs.lstatSync(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid")).isFile()){
+						fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
+							if(err){
+								console.log('Error removing previous image: '+Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"));
+								console.error(err);
+								return;
+							}
+						});
+					}
 				});
 				filename = randomString(32,'abcdef1234567890')+"."+extension;
 				fs.writeFile(Settings.RESOURCE_STORAGE_ROOT+filename, value.split(',')[1], 'base64', function(err){
-					if(err){ console.error(err); return; }
+					if(err){
+						console.log('Error writing on disk the new file: '+Settings.RESOURCE_STORAGE_ROOT+filename);
+						console.error(err);
+						return;
+					}
 					anchor.set("_"+field+"_resid", filename);
 					anchor.save();
 				});
 			}else{
-				console.log('mimetype inválido: '+mimetype);
+				console.log('invalid mimetype: '+mimetype);
 			}
 		}else if(fs.existsSync(value) && !fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+filename)){
 			// It's a path, move it!
 			fs.rename(value, Settings.RESOURCE_STORAGE_ROOT+filename, function(err){
-				if(err){ console.error(err); return; }
+				if(err){
+					console.log('Error moving the new file: '+Settings.RESOURCE_STORAGE_ROOT+filename);
+					console.error(err);
+					return;
+				}
 				anchor.set("_"+field+"_resid", filename);
 				anchor.save();
 			});
 		}else if(value == '' || value == null || value == undefined){
 			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
-				if(err){ console.error(err); }
+				if(err){
+					console.log('Error removing the actual file: '+Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"))
+					console.error(err);
+					return;
+				}
 			});
 			anchor.set("_"+field+"_resid", '');
 		}else{
@@ -208,9 +260,11 @@ var PictureFieldCreator = function(fields){
 var PictureRemover = function(fields){
 	return function(doc){
 		for(var x in fields){
-			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+ this["_"+fields[x]+"_resid"], function(err){
-				console.log('Error borrando');
-				console.error(err);
+			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+this["_"+fields[x]+"_resid"], function(err){
+				if(err){
+					console.log('Error removing: ' + Settings.RESOURCE_STORAGE_ROOT+this["_"+fields[x]+"_resid"]);
+					console.error(err);
+				}
 			});
 		}
 	}
@@ -254,7 +308,7 @@ var RouteController = function(req,res){
 	fs.exists(Settings.RESOURCE_STORAGE_ROOT+filename, function(exists){
 		if(exists){
 			res.redirect(Settings.RESOURCE_STORAGE_URL+filename);
-		}else if(parsedOptions && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
+		}else if(parsedOptions && GetMimeTypeByExtension(filenameExtension) == 'video' && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
 			var format = ParseFormatFromExtension(filenameExtension);
 			var resizedBuffer = imagemagick.convert({
 				srcData: fs.readFileSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid),

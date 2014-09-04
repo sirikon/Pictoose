@@ -3,29 +3,75 @@
 <head>
 	<title>Test Pictoose</title>
 	<script type="text/javascript" src="jquery.js"></script>
+	<style>
+		body {
+			background-color: lightblue;
+			font-family: Arial;
+		}
+		h1 {
+			margin: 0px 0px 5px 0px;
+			border-bottom: 1px solid lightgrey;
+		}
+		div.container {
+			width: 600px;
+			padding: 15px;
+			background-color: white;
+			border-radius: 2px;
+			box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
+			display: block;
+			margin: 0px auto 20px auto;
+		}
+		div.colmid {
+			width: 50%;
+			box-sizing: border-box;
+			display: inline-block;
+			padding: 5px;
+		}
+		div.colmid.left {
+			padding-left: 0px;
+		}
+		div.colmid.right {
+			padding-right: 0px;
+		}
+	</style>
 </head>
 <body>
-	<form id="test">
-		<label for="model">Modelo</label>
-		<input type="text" name="model">
-		<br>
-		<label for="thumbnail">Thumbnail</label><br>
-		<input type="file" for="thumbnail"><br>
-		<textarea name="thumbnail" style="width:320px;height:120px;"></textarea><br>
-		<img src="" im="thumbnail" style="width:200px;height:150px;" />
-		<br><br>
 
-		<label for="thumbnail">Brand</label><br>
-		<input type="file" for="brand"><br>
-		<textarea name="brand" style="width:320px;height:120px;"></textarea><br>
-		<img src="" im="brand" style="width:200px;height:150px;" />
-		<br><br>
-		<input type="submit" value="Enviar">
-	</form>
-	<span id="theProgress">0%</span>
-	<div style="width:600px;background-color:whitesmoke;height:50px;">
-		<div id="theBar" style="width:0px;background-color:lightblue;height:50px;"></div>
+	<div class="container">
+		<button onclick="RemoveAll();">Borrar Todo</button>
 	</div>
+
+	<div class="container">
+		<h1>Base 64</h1>
+		<form id="test">
+
+			<label for="model">Modelo</label>
+			<input type="text" name="model">
+			<div style="height:10px;"></div>
+			<div class="colmid left">
+				<label for="thumbnail">Thumbnail</label><br>
+				<input type="file" for="thumbnail"><br>
+				<textarea name="thumbnail" style="width:100%;height:80px;"></textarea><br>
+				<img src="" im="thumbnail" style="max-width:100%;height:150px;display:block;margin:auto;" />
+			</div><div class="colmid right">
+				<label for="thumbnail">Brand</label><br>
+				<input type="file" for="brand"><br>
+				<textarea name="brand" style="width:100%;height:80px;"></textarea><br>
+				<img src="" im="brand" style="max-width:100%;height:150px;display:block;margin:auto;" />
+			</div>
+
+			<input type="submit" value="Enviar"> <span id="theProgress">0%</span>
+			<div style="width:600px;background-color:whitesmoke;height:50px;">
+				<div id="theBar" style="width:0px;background-color:lightblue;height:50px;"></div>
+			</div>
+			
+		</form>
+	</div>
+
+	<div class="container">
+		<h1>iFrame</h1>
+	</div>
+
 	<script>
 
 		var data = {};
@@ -40,6 +86,20 @@
 		    };  
 		    reader.readAsDataURL(e.target.files[0]);
 		});
+
+		var RemoveAll = function(){
+			$.ajax({
+				xhr: function(){
+					var xhr = new window.XMLHttpRequest();
+					return xhr
+				},
+				url: '/',
+				method: 'DELETE',
+				success: function(res){
+					alert('ok');
+				}
+			})
+		}
 
 		$("form#test").on('submit', function(e){
 			e.preventDefault();
