@@ -22,8 +22,8 @@ var Car = mongoose.model('Car', CarSchema);
 var app = express();
 
 app.use(multer({dest: './uploads/'}));
-app.use(bodyparser.urlencoded({limit: '50mb'}));
-app.use(bodyparser.json({limit: '50mb'}));
+app.use(bodyparser.urlencoded({limit: '500mb'}));
+app.use(bodyparser.json({limit: '500mb'}));
 
 app.use('/public',express.static('./public'));
 app.use('/test',express.static('./test/html'));
@@ -51,9 +51,13 @@ app.post('/', function(req,res){
 });
 
 app.post('/base64', function(req,res){
+	console.log('Entered base64 handler');
 	var myCar = new Car(req.body);
+	console.log('Created a new car with the body');
 	myCar.save();
+	console.log('Saved the car');
 	res.send('ok');
+	console.log('Returned OK');
 });
 
 app.get('/:carid/update', function(req,res){

@@ -22,7 +22,13 @@
 		<br><br>
 		<input type="submit" value="Enviar">
 	</form>
+	<span id="theProgress">0%</span>
+	<div style="width:600px;background-color:whitesmoke;height:50px;">
+		<div id="theBar" style="width:0px;background-color:lightblue;height:50px;"></div>
+	</div>
 	<script>
+
+		var data = {};
 
 		$(document).on('change',"input[type='file']", function(e){
 			var anchor = this;
@@ -30,6 +36,7 @@
 		    reader.onload = function(event) {
 		    	$("*[name='"+ $(anchor).attr('for') +"']").val(event.target.result);
 		    	$("img[im='"+ $(anchor).attr('for') +"']").attr('src',event.target.result);
+		    	data[$(anchor).attr('for')] = event.target.result;
 		    };  
 		    reader.readAsDataURL(e.target.files[0]);
 		});
@@ -37,10 +44,26 @@
 		$("form#test").on('submit', function(e){
 			e.preventDefault();
 			var el = $(this);
-			var data = el.serialize();
-			$.post('/base64', data, function(res){
-				alert(res);
-			});
+			data['model'] = $("input[name='model']").val();
+			$.ajax({
+				xhr: function(){
+					var xhr = new window.XMLHttpRequest();
+					xhr.upload.addEventListener('progress', function(evt){
+						if(evt.lengthComputable){
+							var percentComplete = (evt.loaded / evt.total)*100;
+							$("#theBar").attr('style','width:'+(percentComplete*6)+'px;background-color:lightblue;height:50px;');
+							$("#theProgress").html( (Math.round(percentComplete*100)/100).toString()+'%');
+						}
+					});
+					return xhr
+				},
+				url: '/base64',
+				data: data,
+				method: 'POST',
+				success: function(res){
+					alert(res);
+				}
+			})
 		});
 	</script>
 </body>

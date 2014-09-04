@@ -165,7 +165,7 @@ var PictureSetter = function(field){
 				});
 				filename = randomString(32,'abcdef1234567890')+"."+extension;
 				fs.writeFile(Settings.RESOURCE_STORAGE_ROOT+filename, value.split(',')[1], 'base64', function(err){
-					if(err){ console.log(err); return; }
+					if(err){ console.error(err); return; }
 					anchor.set("_"+field+"_resid", filename);
 					anchor.save();
 				});
@@ -175,7 +175,7 @@ var PictureSetter = function(field){
 		}else if(fs.existsSync(value) && !fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+filename)){
 			// It's a path, move it!
 			fs.rename(value, Settings.RESOURCE_STORAGE_ROOT+filename, function(err){
-				if(err){ console.log(err); return; }
+				if(err){ console.error(err); return; }
 				anchor.set("_"+field+"_resid", filename);
 				anchor.save();
 			});
@@ -210,7 +210,7 @@ var PictureRemover = function(fields){
 		for(var x in fields){
 			fs.unlink(Settings.RESOURCE_STORAGE_ROOT+ this["_"+fields[x]+"_resid"], function(err){
 				console.log('Error borrando');
-				console.log(err);
+				console.error(err);
 			});
 		}
 	}
