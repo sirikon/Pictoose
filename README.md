@@ -1,6 +1,8 @@
 Pictoose
 ========
-Pictoose is a Mongoose plugin made for make image storage easiest possible
+Pictoose is a Mongoose plugin made for make image storage (and video!) easiest possible
+
+Now with image resizing
 
 ## How to use it ##
 Lets supose that you actually have this code:
@@ -61,7 +63,51 @@ app.post('/', function(req,res){
 });
 ```
 
+You can also use a base64 string or a public URL to store images
+
+```javascript
+app.post('/', function(req,res){
+	var muCar = new Car(req.body);
+	myCar.thumbnail = req.body.thumbnail; // (data:image/png;base64,...)
+	myCar.brand = 'http://anotherserver.com/image.png';
+	myCar.save();
+	res.send('ok');
+});
+```
+
+When Pictoose receives a new image/video in base64/filepath, it will validate the file.
+
+Supported file formats:
+
+ * png
+ * jpg
+ * jpeg
+ * gif
+ * png
+ * bmp
+ * webp
+ * mp4
+ * avi
+ * mov
+ * mpeg
+
+If Pictoose receives a public URL will not validate anything and will directly store the URL
+
 That's all!
+
+## Image Resizing ##
+
+Image resizing is simple, if we have the following URL generated and stored by Pictoose:
+```
+http://127.0.0.1:3000/resources/d8fbd233ac9deee7046841f02fb313ed.jpg
+```
+And we add this query:
+```
+http://127.0.0.1:3000/resources/d8fbd233ac9deee7046841f02fb313ed.jpg?resize=200x300afit
+```
+Will resize the image, store it in his new size, and return the public URL of the new image, the next time we query the same resize options, the image will be already resized and stored.
+
+Resize options are: widthxheight(fill|afit|afil)
 
 ## License ##
 MIT
