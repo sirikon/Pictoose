@@ -73,8 +73,12 @@ var GetMimeType = function(mime){
  * Returns the type or false if it's not valid 
  */
 var GetMimeTypeByExtension = function(ext){
+	var extension = ext;
+	if(extension.indexOf('.') >= 0){
+		extension = extension.substr( extension.indexOf('.')+1 );
+	}
 	for (var x in mimes){
-		if( mimes[x].extension == ext ){
+		if( mimes[x].extension == extension ){
 			return mimes[x].type;
 		}
 	}
@@ -315,7 +319,7 @@ var RouteController = function(req,res){
 	fs.exists(Settings.RESOURCE_STORAGE_ROOT+filename, function(exists){
 		if(exists){
 			res.redirect(Settings.RESOURCE_STORAGE_URL+filename);
-		}else if(parsedOptions && GetMimeTypeByExtension(filenameExtension) == 'video' && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
+		}else if(parsedOptions && GetMimeTypeByExtension(filenameExtension) == 'image' && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
 			var format = ParseFormatFromExtension(filenameExtension);
 			var resizedBuffer = imagemagick.convert({
 				srcData: fs.readFileSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid),
