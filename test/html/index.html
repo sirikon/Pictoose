@@ -38,7 +38,7 @@
 <body>
 
 	<div style="position:fixed;top:0px;left:0px;width:100%;">
-		<div class="container">
+		<div class="container" style="border-top-left-radius:0px;border-top-right-radius:0px;">
 			<button onclick="RemoveAll(this);">Borrar Todo</button>
 		</div>
 	</div>
@@ -72,7 +72,7 @@
 
 	<div class="container">
 		<h1>POST async iFrame</h1>
-		<form action="/" method="POST" target="uploadIframe" enctype="multipart/form-data">
+		<form action="/" method="POST" enctype="multipart/form-data" target="uploadIframe">
 			<input type="text" placeholder="Modelo" name="model"><br>
 			Brand: <input type="file" name="brand"><br>
 			Thumbnail: <input type="file" name="thumbnail"><br>
