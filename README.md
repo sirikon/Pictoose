@@ -1,5 +1,8 @@
 Pictoose
 ========
+[![Pictoose on NPM](http://img.shields.io/npm/v/pictoose.svg)](https://www.npmjs.org/package/pictoose)
+[![Pictoose downloads](http://img.shields.io/npm/dm/pictoose.svg)](https://www.npmjs.org/package/pictoose)
+
 Pictoose is a Mongoose plugin made for make image storage (and video!) easiest possible
 
 Now with image resizing
