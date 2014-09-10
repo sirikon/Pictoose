@@ -1,6 +1,6 @@
 {
   "name": "pictoose",
-  "version": "0.0.4",
+  "version": "0.0.4.1",
   "description": "Pictures in Mongoose!",
   "main": "pictoose.js",
   "scripts": {
