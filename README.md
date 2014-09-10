@@ -1,5 +1,8 @@
 Pictoose
 ========
+[![Pictoose on NPM](http://img.shields.io/npm/v/pictoose.svg)](https://www.npmjs.org/package/pictoose)
+[![Pictoose downloads](http://img.shields.io/npm/dm/pictoose.svg)](https://www.npmjs.org/package/pictoose)
+
 Pictoose is a Mongoose plugin made for make image storage (and video!) easiest possible
 
 Now with image resizing
@@ -34,7 +37,7 @@ console.log('Listening on port 3000');
 To use Pictoose all you need to do is require de module, configure it and include the plugin to a Schema by this way:
 
 ```javascript
-var Pictoose	= require('../pictoose.js');
+var Pictoose	= require('pictoose');
 
 Pictoose.Config('RESOURCE_STORAGE_ROOT', './public/');
 Pictoose.Config('RESOURCE_STORAGE_URL', 'http://127.0.0.1:3000/public/');
