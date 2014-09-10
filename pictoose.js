@@ -199,6 +199,9 @@ var PictureSetter = function(field){
 			var mimetype = value.substr(5).split(";")[0];
 			var extension = GetMimeExtension(mimetype);
 			if(extension){
+				filename = randomString(32,'abcdef1234567890')+"."+extension;
+				anchor.set("_"+field+"_resid", filename);
+
 				fs.exists(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(existsit){
 					if(existsit && fs.lstatSync(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid")).isFile()){
 						fs.unlink(Settings.RESOURCE_STORAGE_ROOT+anchor.get("_"+field+"_resid"), function(err){
@@ -210,14 +213,14 @@ var PictureSetter = function(field){
 						});
 					}
 				});
-				filename = randomString(32,'abcdef1234567890')+"."+extension;
+				
 				fs.writeFile(Settings.RESOURCE_STORAGE_ROOT+filename, value.split(',')[1], 'base64', function(err){
 					if(err){
 						console.log('Error writing on disk the new file: '+Settings.RESOURCE_STORAGE_ROOT+filename);
 						console.error(err);
+						anchor.set("_"+field+"_resid", '');
 						return;
 					}
-					anchor.set("_"+field+"_resid", filename);
 					anchor.save();
 				});
 			}else{
@@ -225,13 +228,14 @@ var PictureSetter = function(field){
 			}
 		}else if(fs.existsSync(value) && !fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+filename)){
 			// It's a path, move it!
+			anchor.set("_"+field+"_resid", filename);
 			fs.rename(value, Settings.RESOURCE_STORAGE_ROOT+filename, function(err){
 				if(err){
 					console.log('Error moving the new file: '+Settings.RESOURCE_STORAGE_ROOT+filename);
 					console.error(err);
+					anchor.set("_"+field+"_resid", '');
 					return;
 				}
-				anchor.set("_"+field+"_resid", filename);
 				anchor.save();
 			});
 		}else if(value == '' || value == null || value == undefined){

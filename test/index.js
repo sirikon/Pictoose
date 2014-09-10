@@ -47,13 +47,13 @@ app.post('/', function(req,res){
 	myCar.thumbnail = req.files.thumbnail.path;
 	myCar.brand = req.files.brand.path;
 	myCar.save();
-	res.send('ok');
+	res.send(myCar.thumbnail + ", " + myCar.brand);
 });
 
 app.post('/base64', function(req,res){
 	var myCar = new Car(req.body);
 	myCar.save();
-	res.send('ok');
+	res.send(myCar.thumbnail + ", " + myCar.brand);
 });
 
 app.get('/:carid/update', function(req,res){
