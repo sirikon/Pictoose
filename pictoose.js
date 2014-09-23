@@ -11,8 +11,13 @@
 'use strict';
 var fs 				= require('fs');
 var path 			= require('path');
-var imagemagick 	= require('imagemagick-native');
 var url 			= require('url');
+try {
+	var imagemagick = require('imagemagick-native');
+}catch(err){
+	var imagemagick = null;
+}
+
 
 /* Settings */
 var Settings = {
@@ -323,7 +328,7 @@ var RouteController = function(req,res){
 	fs.exists(Settings.RESOURCE_STORAGE_ROOT+filename, function(exists){
 		if(exists){
 			res.redirect(Settings.RESOURCE_STORAGE_URL+filename);
-		}else if(parsedOptions && GetMimeTypeByExtension(filenameExtension) == 'image' && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid)){
+		}else if(parsedOptions && GetMimeTypeByExtension(filenameExtension) == 'image' && fs.existsSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid) && imagemagick){
 			var format = ParseFormatFromExtension(filenameExtension);
 			var resizedBuffer = imagemagick.convert({
 				srcData: fs.readFileSync(Settings.RESOURCE_STORAGE_ROOT+req.params.resid),

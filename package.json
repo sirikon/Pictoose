@@ -1,6 +1,6 @@
 {
   "name": "pictoose",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Pictures in Mongoose!",
   "main": "pictoose.js",
   "scripts": {
@@ -18,7 +18,9 @@
   "homepage": "https://github.com/Sirikon/Pictoose",
   "dependencies": {
     "express": "4.x.x",
-    "mongoose": "3.8.x",
+    "mongoose": "3.8.x"
+  },
+  "optionalDependencies": {
     "imagemagick-native": "1.2.x"
   },
   "devDependencies": {
